@@ -5,6 +5,8 @@ const typeDefs = `
     type Query {
         hello: String!
         name: String!
+        location: String!
+        bio: String!
     }
 `;
 
@@ -17,6 +19,12 @@ const resolvers = {
         },
         name() {
             return "Ruth Newman";
+        },
+        location() {
+            return "London";
+        },
+        bio() {
+            return "A former aid worker turned Full Stack Developer, originally from Manchester, living in London";
         }
     }
 }
