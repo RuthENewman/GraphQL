@@ -1,9 +1,31 @@
-import myCurrentLocation, { message, name, getGreeting } from './myModule.js';
-import total, { subtract } from './main.js';
+import { GraphQLServer } from 'graphql-yoga';
 
-console.log(message);
-console.log(getGreeting(name));
-console.log(myCurrentLocation);
+// Type definitions (schema)
+const typeDefs = `
+    type Query {
+        hello: String!
+        name: String!
+    }
+`;
 
-console.log(total(2,4));
-console.log(subtract(4,2));
+// Resolvers
+
+const resolvers = {
+    Query: {
+        hello() {
+            return 'This is my first query!';
+        },
+        name() {
+            return "Ruth Newman";
+        }
+    }
+}
+
+const server = new GraphQLServer({
+    typeDefs,
+    resolvers
+});
+
+server.start(() => {
+    console.log('The server is up and running');
+})
