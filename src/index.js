@@ -2,12 +2,49 @@ import { GraphQLServer } from 'graphql-yoga';
 
 // Scalar types - String, Boolean, Int, Float, ID
 
+// Demo user data 
+
+const users = [{
+    id: 1,
+    name: 'Ruth',
+    email: 'ruth@gmail.com',
+    age: 31
+}, {
+    id: 2,
+    name: 'Sarah',
+    email: 'sarah@gmail.com',
+    age: 26
+}, {
+    id: 3,
+    name: 'Naomi',
+    email: 'naomi@gmail.com',
+    age: 34
+}];
+
+// Demo post data 
+
+const posts = [{
+    id: 1,
+    title: 'First post',
+    body: 'Some super interesting content',
+    published: true
+}, {
+    id: 2, 
+    title: 'Second post',
+    body: 'Something else really interesting',
+    published: true
+}, {
+    id: 3,
+    title: 'Draft future post',
+    body: 'Still thinking what to add here',
+    published: false
+}];
+
 // Type definitions (schema)
 const typeDefs = `
     type Query {
-        greeting(name: String, position: String): String!
-        add(numbers: [Float!]!): Float!
-        scores: [Int!]! 
+        users(query: String): [User!]!
+        posts(query: String): [Post!]!
         post: Post!
         me: User!
     }
@@ -46,28 +83,24 @@ const resolvers = {
                 published: false
             }
         },
-        greeting(parent, args, context, info) {
-            if (args.name && args.position) {
-                return `Hello ${args.name}! You are my favourite ${args.position}`;
-            } else {
-                return "Hello there";
+        users(parent, args, context, info) {
+            if (!args.query) {
+                return users;
             }
+            return users.filter((user) => {
+                return user.name.toLowerCase().includes(args.query.toLowerCase());
+            });
         },
-        add(parent, args, context, info) {
-            if (args.numbers.length === 0) {
-                return 0;
+        posts(parent, args, context, info) {
+            if (!args.query) {
+                return posts;
             }
-
-            return args.numbers.reduce((a, b) => {
-                return a + b;
-            });            
-        },
-        scores(parent, args, context, info) {
-            return [91, 82, 97]
+            return posts.filter((post) => {
+                return post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase());
+            });
         }
     }
 }
-
 
 const server = new GraphQLServer({
     typeDefs,
