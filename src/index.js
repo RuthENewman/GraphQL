@@ -27,17 +27,20 @@ const posts = [{
     id: 1,
     title: 'First post',
     body: 'Some super interesting content',
-    published: true
+    published: true,
+    author: 1
 }, {
     id: 2, 
     title: 'Second post',
     body: 'Something else really interesting',
-    published: true
+    published: true,
+    author: 1
 }, {
     id: 3,
     title: 'Draft future post',
     body: 'Still thinking what to add here',
-    published: false
+    published: false,
+    author: 2
 }];
 
 // Type definitions (schema)
@@ -61,6 +64,7 @@ const typeDefs = `
         title: String!
         body: String!
         published: Boolean!
+        author: User!
     }
 `;
 
@@ -97,6 +101,13 @@ const resolvers = {
             }
             return posts.filter((post) => {
                 return post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase());
+            });
+        }
+    },
+    Post: {
+        author(parent, args, context, info) {
+            return users.find((user) => {
+                return user.id === parent.author;
             });
         }
     }
