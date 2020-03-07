@@ -6,7 +6,8 @@ import { GraphQLServer } from 'graphql-yoga';
 const typeDefs = `
     type Query {
         greeting(name: String, position: String): String!
-        add(a: Int, b: Int): Int!
+        add(numbers: [Float!]!): Float!
+        scores: [Int!]! 
         post: Post!
         me: User!
     }
@@ -45,16 +46,24 @@ const resolvers = {
                 published: false
             }
         },
-        greeting(parent, args, ctx, info) {
+        greeting(parent, args, context, info) {
             if (args.name && args.position) {
                 return `Hello ${args.name}! You are my favourite ${args.position}`;
             } else {
                 return "Hello there";
             }
         },
-        add(parent, args, ctx, info) {
-            console.log(args)
-            return args.a + args.b;
+        add(parent, args, context, info) {
+            if (args.numbers.length === 0) {
+                return 0;
+            }
+
+            return args.numbers.reduce((a, b) => {
+                return a + b;
+            });            
+        },
+        scores(parent, args, context, info) {
+            return [91, 82, 97]
         }
     }
 }
