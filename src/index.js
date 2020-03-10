@@ -1,4 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga';
+import uuidv4 from 'uuid/v4';
 
 // Scalar types - String, Boolean, Int, Float, ID
 
@@ -74,7 +75,13 @@ const typeDefs = `
         post: Post!
         me: User!
     }
-
+    
+    type Mutation {
+        createUser(name: String!, email: String!, age: Int): User!
+        createPost(title: String!, body: String!, published: Boolean!, author: ID!): Post!
+        createComment(text: String!, post: ID!, author: ID!): Comment!
+    }
+     
     type User {
         id: ID!
         name: String!
@@ -150,6 +157,50 @@ const resolvers = {
             return comments.filter((comment) => {
                 return comment.post === parent.id;
             });
+        }
+    },
+    Mutation: {
+        createUser(parent, args, context, info) {
+            const email = users.some((user) => user.email === args.email);
+            if (email) {
+                throw new Error('Email address already being used.');
+            }
+            const user = {
+                id: uuidv4(),
+                name: args.name,
+                email: args.email,
+                age: args.age
+            }
+            users.push(user);
+            return user;
+        },
+        createPost(parent, args, context, info) {
+            const author = users.some((user) => user.id === args.author);
+
+            if (!author) {
+                throw new Error('User not found');
+            }
+            const post = {
+                id: uuidv4(),
+                title: args.title,
+                body: args.body,
+                published: args.published,
+                author: args.author
+            }
+            posts.push(post);
+            return post;
+        },
+        createComment(parent, args, context, info) {
+            const author = users.some((user) => user.id === args.author);
+            if (!author) {
+                throw new Error('User not found');
+            }
+            const comment = {
+                id: uuidv4(),
+                text: args.text
+            }
+            comments.push(comment);
+            return comment;
         }
     },
     User: {
