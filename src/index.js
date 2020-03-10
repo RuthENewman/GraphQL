@@ -6,17 +6,17 @@ import uuidv4 from 'uuid/v4';
 // Demo user data 
 
 const users = [{
-    id: 1,
+    id: '1',
     name: 'Ruth',
     email: 'ruth@gmail.com',
     age: 31
 }, {
-    id: 2,
+    id: '2',
     name: 'Sarah',
     email: 'sarah@gmail.com',
     age: 26
 }, {
-    id: 3,
+    id: '3',
     name: 'Naomi',
     email: 'naomi@gmail.com',
     age: 34
@@ -25,45 +25,45 @@ const users = [{
 // Demo post data 
 
 const posts = [{
-    id: 1,
+    id: '1',
     title: 'First post',
     body: 'Some super interesting content',
     published: true,
     author: 1
 }, {
-    id: 2, 
+    id: '2', 
     title: 'Second post',
     body: 'Something else really interesting',
     published: true,
-    author: 1
+    author: '1'
 }, {
-    id: 3,
+    id: '3',
     title: 'Draft future post',
     body: 'Still thinking what to add here',
     published: false,
-    author: 2
+    author: '2'
 }];
 
 const comments = [{
-        id: 188,
+        id: '188',
         text: "Ooh how interesting",
-        author: 2,
-        post: 1
+        author: '2',
+        post: '1'
 }, {
-        id: 189,
+        id: '189',
         text: "Thanks for the compliment",
-        author: 1,
-        post: 1
+        author: '1',
+        post: '1'
 }, {
-        id: 211,
+        id: '211',
         text: "Oooh how insightful",
-        author: 3,
-        post: 2
+        author: '3',
+        post: '2'
 }, {
-        id: 214,
+        id: '214',
         text: "I disagree",
-        author: 1,
-        post: 3
+        author: '2',
+        post: '2'
 }];
 
 // Type definitions (schema)
@@ -79,7 +79,7 @@ const typeDefs = `
     type Mutation {
         createUser(name: String!, email: String!, age: Int): User!
         createPost(title: String!, body: String!, published: Boolean!, author: ID!): Post!
-        createComment(text: String!, post: ID!, author: ID!): Comment!
+        createComment(text: String!, author: ID!, post: ID!): Comment!
     }
      
     type User {
@@ -147,18 +147,6 @@ const resolvers = {
             return comments;
         }
     },
-    Post: {
-        author(parent, args, context, info) {
-            return users.find((user) => {
-                return user.id === parent.author;
-            });
-        },
-        comments(parent, args, context, info) {
-            return comments.filter((comment) => {
-                return comment.post === parent.id;
-            });
-        }
-    },
     Mutation: {
         createUser(parent, args, context, info) {
             const email = users.some((user) => user.email === args.email);
@@ -191,16 +179,33 @@ const resolvers = {
             return post;
         },
         createComment(parent, args, context, info) {
-            const author = users.some((user) => user.id === args.author);
-            if (!author) {
-                throw new Error('User not found');
+            const userFound = users.find((user) => user.id === args.author);
+            const postFound = posts.find((post) => post.id === args.post && post.published);
+            
+            if (!userFound || !postFound) {
+                throw new Error('User and post not found');
             }
+            
             const comment = {
                 id: uuidv4(),
-                text: args.text
+                text: args.text,
+                author: args.author,
+                post: args.post
             }
             comments.push(comment);
             return comment;
+        }
+    },
+    Post: {
+        author(parent, args, context, info) {
+            return users.find((user) => {
+                return user.id === parent.author;
+            });
+        },
+        comments(parent, args, context, info) {
+            return comments.filter((comment) => {
+                return comment.post === parent.id;
+            });
         }
     },
     User: {
