@@ -77,9 +77,9 @@ const typeDefs = `
     }
     
     type Mutation {
-        createUser(data: CreateUserInput): User!
-        createPost(title: String!, body: String!, published: Boolean!, author: ID!): Post!
-        createComment(text: String!, author: ID!, post: ID!): Comment!
+        createUser(data: CreateUserInput!): User!
+        createPost(data: CreatePostInput!): Post!
+        createComment(data: CreateCommentInput!): Comment!
     }
 
     input CreateUserInput {
@@ -88,6 +88,19 @@ const typeDefs = `
         age: Int
     }
      
+    input CreatePostInput {
+        title: String!
+        body: String!
+        published: Boolean!
+        author: ID!
+    }
+
+    input CreateCommentInput {
+        text: String!
+        author: ID!
+        post: ID!
+    }
+
     type User {
         id: ID!
         name: String!
@@ -168,21 +181,21 @@ const resolvers = {
             return user;
         },
         createPost(parent, args, context, info) {
-            const author = users.some((user) => user.id === args.author);
+            const author = users.some((user) => user.id === args.data.author);
 
             if (!author) {
                 throw new Error('User not found');
             }
             const post = {
                 id: uuidv4(),
-                ...args
+                ...args.data
             }
             posts.push(post);
             return post;
         },
         createComment(parent, args, context, info) {
-            const userFound = users.find((user) => user.id === args.author);
-            const postFound = posts.find((post) => post.id === args.post && post.published);
+            const userFound = users.find((user) => user.id === args.data.author);
+            const postFound = posts.find((post) => post.id === args.data.post && post.published);
             
             if (!userFound || !postFound) {
                 throw new Error('User and post not found');
@@ -190,7 +203,7 @@ const resolvers = {
             
             const comment = {
                 id: uuidv4(),
-                ...args
+                ...args.data
             }
             comments.push(comment);
             return comment;
